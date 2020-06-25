@@ -1,36 +1,58 @@
-import * as React from 'react';
-import { Platform, StyleSheet, Text, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import 'react-native-gesture-handler';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { Platform, StyleSheet, Image } from 'react-native';
+import { HomeScreen } from './screens/Home';
+import { Profile } from './screens/Profile';
+import { PostScreen } from './screens/Post';
+import { AuthorScreen } from './screens/Author';
+import { ApplicationProvider } from '@ui-kitten/components';
+import * as eva from '@eva-design/eva';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 
-const instructions = Platform.select({
-  ios: `Press Cmd+R to reload,\nCmd+D or shake for dev menu`,
-  android: `Double tap R on your keyboard to reload,\nShake or press menu button for dev menu`,
-});
+const Stack = createStackNavigator();
 
 export default function App() {
+  const [currentUser, setCurrentUser] = useState();
+  useEffect(() => {
+    fetch('http://my-json-server.typicode.com/orlovskyalex/jellyfish-fake-rest-server/users')
+      .then(res => res.json())
+      .then(res => setCurrentUser(res[0].id));
+  }, [])
   return (
-    <View style={styles.container}>
-      <Text style={styles.welcome}>Welcome to React Native!</Text>
-      <Text style={styles.instructions}>To get started, edit App.js</Text>
-      <Text style={styles.instructions}>{instructions}</Text>
-    </View>
+    <ApplicationProvider {...eva} theme={eva.light}>
+      <NavigationContainer>
+        <Stack.Navigator
+          screenOptions={({ route, navigation }) => (
+            {
+              headerRight: () => (
+                <TouchableOpacity onPress={() => navigation.navigate('Profile', { user: currentUser })}>
+                  <Image style={{ width: 40, height: 40 }} source={require('./assets/people-outline.png')} />
+                </TouchableOpacity>
+              ),
+            }
+          )}
+        >
+          <Stack.Screen
+            name="Home"
+            component={HomeScreen}
+          />
+          <Stack.Screen
+            name="Profile"
+            component={Profile}
+          />
+          <Stack.Screen
+            name="Post"
+            component={PostScreen}
+          />
+          <Stack.Screen
+            name="Author"
+            component={AuthorScreen}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </ApplicationProvider>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
-});
